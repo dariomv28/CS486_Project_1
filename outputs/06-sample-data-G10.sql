@@ -13,8 +13,6 @@ DELETE FROM dbo.users;
 GO
 
 DBCC CHECKIDENT ('dbo.maintenance_records', RESEED, 0);
-DBCC CHECKIDENT ('dbo.usage_sessions', RESEED, 0);
-DBCC CHECKIDENT ('dbo.approvals', RESEED, 0);
 DBCC CHECKIDENT ('dbo.booking_requests', RESEED, 0);
 DBCC CHECKIDENT ('dbo.facilities', RESEED, 0);
 GO
@@ -96,25 +94,17 @@ INSERT INTO dbo.booking_requests (booking_id, requester_id, space_code, requeste
 SET IDENTITY_INSERT dbo.booking_requests OFF;
 GO
 
-SET IDENTITY_INSERT dbo.approvals ON;
-
-INSERT INTO dbo.approvals (approval_id, booking_id, staff_id, decision, decision_time, decision_note, rejection_reason) VALUES
-(1, 2, 'U004', N'approved', '2026-06-10T10:00:00', N'Classroom is available for the scheduled lecture.', NULL),
-(2, 3, 'U006', N'approved', '2026-06-10T10:05:00', N'Auditorium approved for department seminar.', NULL),
-(3, 4, 'U004', N'approved', '2026-06-10T10:10:00', N'Lab available with 40 computers.', NULL),
-(4, 5, 'U006', N'rejected', '2026-06-10T10:15:00', N'Rejected due to a higher-priority faculty committee reservation.', N'Faculty committee meeting has priority.'),
-(5, 7, 'U008', N'approved', '2026-06-10T10:20:00', N'Project laboratory approved for capstone work.', NULL);
-
-SET IDENTITY_INSERT dbo.approvals OFF;
+INSERT INTO dbo.approvals (booking_id, staff_id, decision, decision_time, decision_note, rejection_reason) VALUES
+(2, 'U004', N'approved', '2026-06-10T10:00:00', N'Classroom is available for the scheduled lecture.', NULL),
+(3, 'U006', N'approved', '2026-06-10T10:05:00', N'Auditorium approved for department seminar.', NULL),
+(4, 'U004', N'approved', '2026-06-10T10:10:00', N'Lab available with 40 computers.', NULL),
+(5, 'U006', N'rejected', '2026-06-10T10:15:00', N'Rejected due to a higher-priority faculty committee reservation.', N'Faculty committee meeting has priority.'),
+(7, 'U008', N'approved', '2026-06-10T10:20:00', N'Project laboratory approved for capstone work.', NULL);
 GO
 
-SET IDENTITY_INSERT dbo.usage_sessions ON;
-
-INSERT INTO dbo.usage_sessions (session_id, booking_id, actual_start_time, checked_in_by, initial_condition, actual_end_time, final_condition, usage_notes) VALUES
-(1, 4, '2026-07-03T10:05:00', 'U004', N'Lab was clean; all instructor equipment working.', '2026-07-03T12:50:00', N'Room left clean; one workstation reported slow network login.', N'Workshop completed successfully.'),
-(2, 7, '2026-07-06T09:03:00', 'U008', N'Project benches clean and all assigned workstations available.', NULL, NULL, N'Session currently checked in.');
-
-SET IDENTITY_INSERT dbo.usage_sessions OFF;
+INSERT INTO dbo.usage_sessions (booking_id, actual_start_time, checked_in_by, initial_condition, actual_end_time, final_condition, usage_notes) VALUES
+(4, '2026-07-03T10:05:00', 'U004', N'Lab was clean; all instructor equipment working.', '2026-07-03T12:50:00', N'Room left clean; one workstation reported slow network login.', N'Workshop completed successfully.'),
+(7, '2026-07-06T09:03:00', 'U008', N'Project benches clean and all assigned workstations available.', NULL, NULL, N'Session currently checked in.');
 GO
 
 SET IDENTITY_INSERT dbo.maintenance_records ON;

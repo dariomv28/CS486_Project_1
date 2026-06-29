@@ -136,14 +136,13 @@ CREATE TABLE dbo.booking_requests (
 GO
 
 CREATE TABLE dbo.approvals (
-    approval_id INT IDENTITY(1,1) NOT NULL,
     booking_id INT NOT NULL,
     staff_id VARCHAR(20) NOT NULL,
     decision NVARCHAR(20) NOT NULL,
     decision_time DATETIME2(0) NOT NULL CONSTRAINT df_approvals_decision_time DEFAULT (SYSDATETIME()),
     decision_note NVARCHAR(MAX) NULL,
     rejection_reason NVARCHAR(MAX) NULL,
-    CONSTRAINT pk_approvals PRIMARY KEY (approval_id),
+    CONSTRAINT pk_approvals PRIMARY KEY (booking_id),
     CONSTRAINT fk_approvals_booking FOREIGN KEY (booking_id)
         REFERENCES dbo.booking_requests(booking_id)
         ON DELETE CASCADE,
@@ -155,7 +154,6 @@ CREATE TABLE dbo.approvals (
 GO
 
 CREATE TABLE dbo.usage_sessions (
-    session_id INT IDENTITY(1,1) NOT NULL,
     booking_id INT NOT NULL,
     actual_start_time DATETIME2(0) NOT NULL CONSTRAINT df_usage_sessions_actual_start_time DEFAULT (SYSDATETIME()),
     checked_in_by VARCHAR(20) NOT NULL,
@@ -163,8 +161,7 @@ CREATE TABLE dbo.usage_sessions (
     actual_end_time DATETIME2(0) NULL,
     final_condition NVARCHAR(MAX) NULL,
     usage_notes NVARCHAR(MAX) NULL,
-    CONSTRAINT pk_usage_sessions PRIMARY KEY (session_id),
-    CONSTRAINT uq_usage_sessions_booking UNIQUE (booking_id),
+    CONSTRAINT pk_usage_sessions PRIMARY KEY (booking_id),
     CONSTRAINT fk_usage_sessions_booking FOREIGN KEY (booking_id)
         REFERENCES dbo.booking_requests(booking_id)
         ON DELETE CASCADE,
@@ -221,12 +218,6 @@ CREATE INDEX idx_booking_requests_space_time
 
 CREATE INDEX idx_booking_requests_status
     ON dbo.booking_requests (booking_status);
-
-CREATE INDEX idx_approvals_booking
-    ON dbo.approvals (booking_id);
-
-CREATE INDEX idx_usage_sessions_booking
-    ON dbo.usage_sessions (booking_id);
 
 CREATE INDEX idx_maintenance_records_space_status
     ON dbo.maintenance_records (space_code, maintenance_status);
@@ -313,7 +304,7 @@ BEGIN
             i.decision,
             ROW_NUMBER() OVER (
                 PARTITION BY i.booking_id
-                ORDER BY i.decision_time DESC, i.approval_id DESC
+                ORDER BY i.decision_time DESC, i.booking_id DESC
             ) AS decision_rank
         FROM inserted AS i
     )
@@ -335,9 +326,9 @@ BEGIN
     IF EXISTS (
         SELECT 1
         FROM inserted AS i
-        LEFT JOIN deleted AS d ON d.session_id = i.session_id
+        LEFT JOIN deleted AS d ON d.booking_id = i.booking_id
         JOIN dbo.booking_requests AS br ON br.booking_id = i.booking_id
-        WHERE d.session_id IS NULL
+        WHERE d.booking_id IS NULL
           AND br.booking_status <> N'approved'
     )
     BEGIN
