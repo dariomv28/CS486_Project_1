@@ -307,7 +307,7 @@ BEGIN
         THROW 51005, 'Only facility staff or facility managers can approve or reject booking requests.', 1;
     END;
 
-    ;WITH latest_decision AS (
+    WITH latest_decision AS (
         SELECT
             i.booking_id,
             i.decision,
