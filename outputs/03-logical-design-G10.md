@@ -180,12 +180,11 @@ Business constraints:
 
 ### 3.6 approvals
 
-`approvals(approval_id, booking_id, staff_id, decision, decision_time, decision_note, rejection_reason)`
+`approvals(booking_id, staff_id, decision, decision_time, decision_note, rejection_reason)`
 
 | Attribute | Data Type | Key / Constraint | Description |
 |---|---|---|---|
-| approval_id | INTEGER | PK, NN | Unique approval decision identifier. |
-| booking_id | INTEGER | FK, NN | Booking request being approved or rejected. |
+| booking_id | INTEGER | PK, FK, NN | Booking request being approved or rejected; uniquely identifies the approval. |
 | staff_id | VARCHAR(20) | FK, NN | Facility staff member or manager making the decision. |
 | decision | VARCHAR(20) | NN, CHK | Approval decision. |
 | decision_time | TIMESTAMP | NN | Time of the decision. |
@@ -194,7 +193,7 @@ Business constraints:
 
 Primary key:
 
-- `approval_id`
+- `booking_id`
 
 Foreign keys:
 
@@ -213,12 +212,11 @@ Business constraints:
 
 ### 3.7 usage_sessions
 
-`usage_sessions(session_id, booking_id, actual_start_time, checked_in_by, initial_condition, actual_end_time, final_condition, usage_notes)`
+`usage_sessions(booking_id, actual_start_time, checked_in_by, initial_condition, actual_end_time, final_condition, usage_notes)`
 
 | Attribute | Data Type | Key / Constraint | Description |
 |---|---|---|---|
-| session_id | INTEGER | PK, NN | Unique usage session identifier. |
-| booking_id | INTEGER | FK, UK, NN | Booking used for the session. |
+| booking_id | INTEGER | PK, FK, NN | Booking used for the session; uniquely identifies the usage session. |
 | actual_start_time | TIMESTAMP | NN | Actual check-in/start time. |
 | checked_in_by | VARCHAR(20) | FK, NN | User who performed check-in. |
 | initial_condition | TEXT | NN | Condition of the space at check-in. |
@@ -228,11 +226,6 @@ Business constraints:
 
 Primary key:
 
-- `session_id`
-
-Candidate keys:
-
-- `session_id`
 - `booking_id`
 
 Foreign keys:
@@ -247,7 +240,7 @@ Domain constraints:
 
 Business constraints:
 
-- A booking may have at most one usage session, enforced by `UNIQUE (booking_id)`.
+- A booking may have at most one usage session, enforced by the primary key on `booking_id`.
 - A usage session should be created only for an approved or checked-in booking.
 - A completed booking should have `actual_end_time` and `final_condition` recorded.
 
@@ -318,9 +311,8 @@ Business constraints:
 | `facilities` | `facility_name` | Facility type names should not duplicate. |
 | `space_facilities` | `(space_code, facility_id)` | Prevents the same facility type from being listed twice for one space. |
 | `booking_requests` | `booking_id` | Main identifier for each booking request. |
-| `approvals` | `approval_id` | Main identifier for each approval decision. |
-| `usage_sessions` | `session_id` | Main identifier for each usage session. |
-| `usage_sessions` | `booking_id` | Enforces at most one usage session per booking. |
+| `approvals` | `booking_id` | Main identifier for each approval decision. |
+| `usage_sessions` | `booking_id` | Main identifier for each usage session. |
 | `maintenance_records` | `maintenance_id` | Main identifier for each maintenance record. |
 
 ## 6. Cardinality Mapping from ERD to Relations
@@ -374,8 +366,8 @@ The schema is designed to satisfy Third Normal Form for the stated requirements.
 | `facilities` | Facility attributes depend on `facility_id`; facility name is unique. |
 | `space_facilities` | Quantity and condition note depend on the full composite key `(space_code, facility_id)`. |
 | `booking_requests` | Booking details depend on `booking_id`; user and space details remain in their own relations. |
-| `approvals` | Decision attributes depend on `approval_id`; user and booking details are referenced by foreign keys. |
-| `usage_sessions` | Actual usage details depend on `session_id`; booking details remain in `booking_requests`. |
+| `approvals` | Decision attributes depend on `booking_id`; user and booking details are referenced by foreign keys. |
+| `usage_sessions` | Actual usage details depend on `booking_id`; booking details remain in `booking_requests`. |
 | `maintenance_records` | Maintenance details depend on `maintenance_id`; user and space details are referenced by foreign keys. |
 
 ## 9. Complete Schema Listing
@@ -430,8 +422,7 @@ booking_requests(
 )
 
 approvals(
-    approval_id PK,
-    booking_id FK -> booking_requests.booking_id,
+    booking_id PK FK -> booking_requests.booking_id,
     staff_id FK -> users.user_id,
     decision,
     decision_time,
@@ -440,8 +431,7 @@ approvals(
 )
 
 usage_sessions(
-    session_id PK,
-    booking_id UK FK -> booking_requests.booking_id,
+    booking_id PK FK -> booking_requests.booking_id,
     actual_start_time,
     checked_in_by FK -> users.user_id,
     initial_condition,

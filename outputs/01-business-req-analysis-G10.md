@@ -113,8 +113,7 @@ Attributes:
 
 | Attribute | Description | Constraint / Domain |
 |---|---|---|
-| approval_id | Unique approval record identifier. | Primary key. |
-| booking_id | Booking being decided. | Foreign key to Booking Request. |
+| booking_id | Unique identifier for each approval, referencing the booking request. | Primary key, foreign key to Booking Request. |
 | staff_id | Facility staff or manager who made the decision. | Foreign key to User; role must be facility staff or facility manager. |
 | decision | Approval decision. | approved or rejected. |
 | decision_time | Time of decision. | Required. |
@@ -129,8 +128,7 @@ Attributes:
 
 | Attribute | Description | Constraint / Domain |
 |---|---|---|
-| session_id | Unique usage session identifier. | Primary key. |
-| booking_id | Booking associated with actual use. | Foreign key to Booking Request; typically unique per session. |
+| booking_id | Unique identifier for each usage session, referencing the booking request. | Primary key, foreign key to Booking Request. |
 | actual_start_time | Actual check-in/start time. | Required when checked in. |
 | checked_in_by | Person who performed check-in. | Foreign key to User. |
 | initial_condition | Condition of the space at check-in. | Required at check-in. |
@@ -159,18 +157,18 @@ Attributes:
 
 ## 4. Relationships, Cardinalities, and Participation
 
-| Relationship | Cardinality | Participation | Description |
-|---|---|---|---|
-| User submits Booking Request | User 1 : N Booking Request | Booking Request total; User partial | Every booking request must be submitted by one user. A user may submit zero or many booking requests. |
-| Space receives Booking Request | Space 1 : N Booking Request | Booking Request total; Space partial | Every booking request is for one space. A space may have zero or many booking requests over time. |
-| Space has Facility | Space M : N Facility, resolved by Space Facility | Space Facility total to both parents | A space may have many facilities, and the same facility type may exist in many spaces. |
-| Booking Request has Approval | Booking Request 1 : 0..N Approval | Approval total; Booking Request partial | A booking may have no approval while pending, and at least one decision when processed. Multiple approval records may be kept if decision history is required. |
-| User makes Approval | User 1 : N Approval | Approval total; User partial | Each approval decision is made by one staff member or facility manager. |
-| Booking Request creates Usage Session | Booking Request 1 : 0..1 Usage Session | Usage Session total; Booking Request partial | Only an approved or checked-in booking should have a usage session. A booking may never be used if cancelled, rejected, or no-show. |
-| User checks in Usage Session | User 1 : N Usage Session | Usage Session total for check-in; User partial | Each usage session records the user who checked in the space. |
-| Space has Maintenance Record | Space 1 : N Maintenance Record | Maintenance Record total; Space partial | Each maintenance record belongs to one space. A space may have zero or many maintenance records. |
-| User reports Maintenance Record | User 1 : N Maintenance Record | Maintenance Record total; User partial | Each problem report has one reporter. A user may report many problems. |
-| User assigned Maintenance Record | User 1 : N Maintenance Record | Maintenance Record partial for assignment; User partial | A maintenance record may be assigned to one staff member. Staff may handle many records. |
+| Relationship | Cardinality | Participation |
+|---|---|---|
+| User submits Booking Request | User 1 : N Booking Request | Booking Request total; User partial |
+| Space receives Booking Request | Space 1 : N Booking Request | Booking Request total; Space partial |
+| Space has Facility | Space M : N Facility, resolved by Space Facility | Space Facility total to both parents |
+| Booking Request has Approval | Booking Request 1 : 0..1 Approval | Approval total; Booking Request partial |
+| User makes Approval | User 1 : N Approval | Approval total; User partial |
+| Booking Request creates Usage Session | Booking Request 1 : 0..1 Usage Session | Usage Session total; Booking Request partial |
+| User checks in Usage Session | User 1 : N Usage Session | Usage Session total for check-in; User partial |
+| Space has Maintenance Record | Space 1 : N Maintenance Record | Maintenance Record total; Space partial |
+| User reports Maintenance Record | User 1 : N Maintenance Record | Maintenance Record total; User partial |
+| User assigned Maintenance Record | User 1 : N Maintenance Record | Maintenance Record partial for assignment; User partial |
 
 ## 5. Business Rules and Constraints
 

@@ -78,8 +78,8 @@ Conclusion: All required attributes from the business requirements are represent
 | `facilities` | `facility_id` | `facility_name` | Valid. Facility names are prevented from duplicating. |
 | `space_facilities` | `(space_code, facility_id)` | Same as primary key | Valid. Prevents duplicate facility entries for the same space. |
 | `booking_requests` | `booking_id` | None required | Valid. Booking ID uniquely identifies each request. |
-| `approvals` | `approval_id` | None required | Valid. Approval ID uniquely identifies each decision record. |
-| `usage_sessions` | `session_id` | `booking_id` | Valid. Session ID identifies the session, and unique booking ID enforces at most one session per booking. |
+| `approvals` | `booking_id` | None required | Valid. Booking ID uniquely identifies each approval record. |
+| `usage_sessions` | `booking_id` | None required | Valid. Booking ID uniquely identifies each usage session. |
 | `maintenance_records` | `maintenance_id` | None required | Valid. Maintenance ID uniquely identifies each maintenance record. |
 
 Conclusion: Primary keys and candidate keys are appropriate and sufficient for the required data model.
@@ -93,9 +93,9 @@ Conclusion: Primary keys and candidate keys are appropriate and sufficient for t
 | Space has facilities | `space_facilities.space_code` references `spaces.space_code` | Valid. One space can have many facility entries. |
 | Facility appears in spaces | `space_facilities.facility_id` references `facilities.facility_id` | Valid. One facility type can appear in many spaces. |
 | Space M:N Facility | `space_facilities(space_code, facility_id)` | Valid. Associative table correctly resolves the many-to-many relationship. |
-| Booking request has approvals | `approvals.booking_id` references `booking_requests.booking_id` | Valid. One booking can have zero or many approval records. |
+| Booking request has approvals | `approvals.booking_id` references `booking_requests.booking_id` as primary key | Valid. One booking can have zero or one approval record. |
 | User makes approvals | `approvals.staff_id` references `users.user_id` | Valid. One staff user can make many approval decisions. Role restriction requires additional enforcement. |
-| Booking request produces usage session | `usage_sessions.booking_id` references `booking_requests.booking_id` with `UNIQUE` | Valid. One booking can have zero or one usage session. |
+| Booking request produces usage session | `usage_sessions.booking_id` references `booking_requests.booking_id` as primary key | Valid. One booking can have zero or one usage session. |
 | User checks in usage session | `usage_sessions.checked_in_by` references `users.user_id` | Valid. One user can check in many sessions; each session records one check-in user. |
 | Space has maintenance records | `maintenance_records.space_code` references `spaces.space_code` | Valid. One space can have many maintenance records. |
 | User reports maintenance records | `maintenance_records.reporter_id` references `users.user_id` | Valid. One user can report many maintenance issues. |
@@ -115,7 +115,7 @@ Conclusion: The relational schema correctly implements the ERD relationships and
 | A booking may be pending without approval. | Approval records are stored separately in `approvals`. | Satisfied. |
 | Every approval must reference one booking and one staff user. | `approvals.booking_id` and `approvals.staff_id` are not null foreign keys. | Satisfied. |
 | A booking may have no usage session. | `usage_sessions` is separate from `booking_requests`. | Satisfied. |
-| A booking may have at most one usage session. | `usage_sessions.booking_id` is unique. | Satisfied. |
+| A booking may have at most one usage session. | `usage_sessions.booking_id` is the primary key. | Satisfied. |
 | Every maintenance record must reference one space and one reporter. | `space_code` and `reporter_id` are not null foreign keys. | Satisfied. |
 | Maintenance assignment may be pending. | `assigned_staff_id` allows NULL. | Satisfied. |
 
@@ -160,8 +160,8 @@ Conclusion: The schema satisfies all rules that can be represented with normal r
 | `facilities` | Atomic facility attributes. | Single-column primary key, so no partial dependency. | Facility description depends on facility ID; facility name is unique. |
 | `space_facilities` | Atomic attributes. | `quantity` and `condition_note` depend on the full composite key. | No non-key attribute depends on another non-key attribute. |
 | `booking_requests` | Atomic booking details. | Single-column primary key, so no partial dependency. | User and space details are not duplicated; only foreign keys are stored. |
-| `approvals` | Atomic approval decision details. | Single-column primary key, so no partial dependency. | Booking and staff details remain in parent tables. |
-| `usage_sessions` | Atomic session details. | Single-column primary key, so no partial dependency. | Booking details remain in `booking_requests`; user details remain in `users`. |
+| `approvals` | Atomic approval decision details. | Single-column primary key (`booking_id`), so no partial dependency. | Booking and staff details remain in parent tables. |
+| `usage_sessions` | Atomic session details. | Single-column primary key (`booking_id`), so no partial dependency. | Booking details remain in `booking_requests`; user details remain in `users`. |
 | `maintenance_records` | Atomic maintenance details. | Single-column primary key, so no partial dependency. | Space and user details are referenced, not duplicated. |
 
 Conclusion: The schema is in Third Normal Form for the stated requirements.

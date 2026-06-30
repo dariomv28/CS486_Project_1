@@ -14,7 +14,7 @@ erDiagram
     SPACE ||--o{ BOOKING_REQUEST : receives
     SPACE ||--o{ SPACE_FACILITY : contains
     FACILITY ||--o{ SPACE_FACILITY : appears_in
-    BOOKING_REQUEST ||--o{ APPROVAL : has_decision
+    BOOKING_REQUEST ||--o| APPROVAL : has_decision
     USER ||--o{ APPROVAL : makes
     BOOKING_REQUEST ||--o| USAGE_SESSION : produces
     USER ||--o{ USAGE_SESSION : checks_in
@@ -70,8 +70,7 @@ erDiagram
     }
 
     APPROVAL {
-        int approval_id PK
-        int booking_id FK
+        int booking_id PK, FK
         string staff_id FK
         string decision
         datetime decision_time
@@ -80,8 +79,7 @@ erDiagram
     }
 
     USAGE_SESSION {
-        int session_id PK
-        int booking_id FK, UK
+        int booking_id PK, FK
         datetime actual_start_time
         string checked_in_by FK
         string initial_condition
@@ -195,8 +193,7 @@ Key attributes:
 
 | Attribute | Type / Domain | Key Role | Description |
 |---|---|---|---|
-| approval_id | Identifier | Primary key | Unique approval record identifier. |
-| booking_id | Identifier | Foreign key | References the booking request being decided. |
+| booking_id | Identifier | Primary key, foreign key | References the booking request being decided; uniquely identifies the approval. |
 | staff_id | Identifier | Foreign key | References the facility staff member or facility manager making the decision. |
 | decision | Controlled text | Non-key | approved or rejected. |
 | decision_time | Date/time | Non-key | Time of approval or rejection. |
@@ -211,8 +208,7 @@ Key attributes:
 
 | Attribute | Type / Domain | Key Role | Description |
 |---|---|---|---|
-| session_id | Identifier | Primary key | Unique usage session identifier. |
-| booking_id | Identifier | Foreign key, candidate key | References the booking used for the session; unique to enforce at most one session per booking. |
+| booking_id | Identifier | Primary key, foreign key | References the booking used for the session; uniquely identifies the usage session. |
 | actual_start_time | Date/time | Non-key | Actual check-in/start time. |
 | checked_in_by | Identifier | Foreign key | References the user who performed check-in. |
 | initial_condition | Text | Non-key | Condition of the space at check-in. |
@@ -247,7 +243,7 @@ Key attributes:
 | SPACE receives BOOKING_REQUEST | SPACE 0..N, BOOKING_REQUEST 1..1 | BOOKING_REQUEST is mandatory; SPACE is optional | One space can receive many bookings over time; each booking is for one space | A request cannot exist without a selected space. |
 | SPACE contains SPACE_FACILITY | SPACE 0..N, SPACE_FACILITY 1..1 | SPACE_FACILITY is mandatory; SPACE is optional | One space can list many facilities; each space-facility row belongs to one space | A space may have no facilities recorded. |
 | FACILITY appears in SPACE_FACILITY | FACILITY 0..N, SPACE_FACILITY 1..1 | SPACE_FACILITY is mandatory; FACILITY is optional | One facility type can appear in many spaces; each space-facility row references one facility type | A facility type may exist before being assigned to a space. |
-| BOOKING_REQUEST has APPROVAL | BOOKING_REQUEST 0..N, APPROVAL 1..1 | APPROVAL is mandatory; BOOKING_REQUEST is optional | A pending booking may have no approval; each approval belongs to one booking | Multiple approval records allow decision history. |
+| BOOKING_REQUEST has APPROVAL | BOOKING_REQUEST 0..1, APPROVAL 1..1 | APPROVAL is mandatory; BOOKING_REQUEST is optional | A pending booking may have no approval; each approval belongs to one booking | A booking can have at most one approval record. |
 | USER makes APPROVAL | USER 0..N, APPROVAL 1..1 | APPROVAL is mandatory; USER is optional | One authorized staff user can make many approval decisions; each decision has one staff member | Staff role must be facility staff or facility manager. |
 | BOOKING_REQUEST produces USAGE_SESSION | BOOKING_REQUEST 0..1, USAGE_SESSION 1..1 | USAGE_SESSION is mandatory; BOOKING_REQUEST is optional | A booking can produce at most one usage session; each session belongs to one booking | Rejected, cancelled, or no-show bookings may have no session. |
 | USER checks in USAGE_SESSION | USER 0..N, USAGE_SESSION 1..1 | USAGE_SESSION is mandatory; USER is optional | One user can check in many sessions; each session records one check-in user | The check-in user may be requester or staff depending on policy. |
