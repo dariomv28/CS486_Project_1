@@ -2,7 +2,7 @@
 
 ## 1. Design Overview
 
-This logical design converts the conceptual ERD from Task 2 into a relational schema for the Campus Space Management System. Each strong entity becomes a relation, the many-to-many relationship between spaces and facilities becomes an associative relation, and one-to-many relationships are represented through foreign keys.
+This logical design converts the conceptual ERD from Task 2 into a relational schema for the Campus Space Management System. Each strong entity becomes a relation, and one-to-many relationships are represented through foreign keys.
 
 The design preserves the main business rules from Task 1: users must have university accounts, bookings must reference one requester and one space, approvals must be made by authorized staff or managers, usage sessions must be tied to approved bookings, and maintenance records must identify the affected space and reporter.
 
@@ -13,11 +13,10 @@ The design preserves the main business rules from Task 1: users must have univer
 | 1 | `users` | Stores university account holders and their roles. |
 | 2 | `spaces` | Stores managed campus spaces. |
 | 3 | `facilities` | Stores facility and equipment types. |
-| 4 | `space_facilities` | Resolves the many-to-many relationship between spaces and facilities. |
-| 5 | `booking_requests` | Stores requested reservations and booking lifecycle status. |
-| 6 | `approvals` | Stores approval or rejection decisions. |
-| 7 | `usage_sessions` | Stores actual check-in and completion information. |
-| 8 | `maintenance_records` | Stores reported space problems and maintenance workflow details. |
+| 4 | `booking_requests` | Stores requested reservations and booking lifecycle status. |
+| 5 | `approvals` | Stores approval or rejection decisions. |
+| 6 | `usage_sessions` | Stores actual check-in and completion information. |
+| 7 | `maintenance_records` | Stores reported space problems and maintenance workflow details. |
 
 ## 3. Relational Schema
 
@@ -95,52 +94,30 @@ Unique constraints:
 
 ### 3.3 facilities
 
-`facilities(facility_id, facility_name, description)`
+`facilities(facility_id, space_code, facility_name, description, quantity, condition_note)`
 
 | Attribute | Data Type | Key / Constraint | Description |
 |---|---|---|---|
-| facility_id | INTEGER | PK, NN | Unique facility type identifier. |
-| facility_name | VARCHAR(100) | UK, NN | Facility or equipment name. |
+| facility_id | INTEGER | PK, NN | Unique facility item identifier. |
+| space_code | VARCHAR(20) | FK, NN | References the space containing the facility. |
+| facility_name | VARCHAR(100) | NN | Facility or equipment name. |
 | description | TEXT |  | Optional facility description. |
-
-Primary key:
-
-- `facility_id`
-
-Candidate keys:
-
-- `facility_id`
-- `facility_name`
-
-### 3.4 space_facilities
-
-`space_facilities(space_code, facility_id, quantity, condition_note)`
-
-| Attribute | Data Type | Key / Constraint | Description |
-|---|---|---|---|
-| space_code | VARCHAR(20) | PK, FK, NN | References the related space. |
-| facility_id | INTEGER | PK, FK, NN | References the facility type. |
 | quantity | INTEGER | NN, CHK | Number of facility items in the space. |
 | condition_note | TEXT |  | Optional condition note. |
 
 Primary key:
 
-- `(space_code, facility_id)`
+- `facility_id`
 
 Foreign keys:
 
 - `space_code` references `spaces(space_code)`
-- `facility_id` references `facilities(facility_id)`
 
 Domain constraints:
 
 - `quantity > 0`
 
-Relationship represented:
-
-- Resolves `spaces` M:N `facilities`.
-
-### 3.5 booking_requests
+### 3.4 booking_requests
 
 `booking_requests(booking_id, requester_id, space_code, requested_start_time, requested_end_time, purpose_of_use, expected_participants, booking_status, created_at)`
 
@@ -178,7 +155,7 @@ Business constraints:
 - For the same `space_code`, approved active bookings must not overlap in requested time.
 - `expected_participants` should not exceed the `capacity` of the related space.
 
-### 3.6 approvals
+### 3.5 approvals
 
 `approvals(booking_id, staff_id, decision, decision_time, decision_note, rejection_reason)`
 
@@ -210,7 +187,7 @@ Business constraints:
 - The referenced `staff_id` must identify a user whose role is `facility staff` or `facility manager`.
 - The approval decision should be consistent with `booking_requests.booking_status`.
 
-### 3.7 usage_sessions
+### 3.6 usage_sessions
 
 `usage_sessions(booking_id, actual_start_time, checked_in_by, initial_condition, actual_end_time, final_condition, usage_notes)`
 
@@ -244,7 +221,7 @@ Business constraints:
 - A usage session should be created only for an approved or checked-in booking.
 - A completed booking should have `actual_end_time` and `final_condition` recorded.
 
-### 3.8 maintenance_records
+### 3.7 maintenance_records
 
 `maintenance_records(maintenance_id, space_code, reporter_id, assigned_staff_id, problem_type, problem_description, start_time, completion_time, maintenance_status, result_note)`
 
@@ -286,9 +263,8 @@ Business constraints:
 ## 4. Foreign Key Relationship Summary
 
 | Child Relation | Foreign Key | Parent Relation | Relationship |
-|---|---|---|---|
-| `space_facilities` | `space_code` | `spaces(space_code)` | A space has listed facilities. |
-| `space_facilities` | `facility_id` | `facilities(facility_id)` | A facility appears in spaces. |
+|---|---|---|---|---|
+| `facilities` | `space_code` | `spaces(space_code)` | A space has facilities. |
 | `booking_requests` | `requester_id` | `users(user_id)` | A user submits booking requests. |
 | `booking_requests` | `space_code` | `spaces(space_code)` | A booking request selects one space. |
 | `approvals` | `booking_id` | `booking_requests(booking_id)` | A booking request has approval decisions. |
@@ -307,9 +283,7 @@ Business constraints:
 | `users` | `email` | University email must uniquely identify a user account. |
 | `spaces` | `space_code` | Required unique space code. |
 | `spaces` | `(building, floor, room_number)` | Physical room location should be unique. |
-| `facilities` | `facility_id` | Main identifier for each facility type. |
-| `facilities` | `facility_name` | Facility type names should not duplicate. |
-| `space_facilities` | `(space_code, facility_id)` | Prevents the same facility type from being listed twice for one space. |
+| `facilities` | `facility_id` | Main identifier for each facility item. |
 | `booking_requests` | `booking_id` | Main identifier for each booking request. |
 | `approvals` | `booking_id` | Main identifier for each approval decision. |
 | `usage_sessions` | `booking_id` | Main identifier for each usage session. |
@@ -321,7 +295,7 @@ Business constraints:
 |---|---|
 | USER 1:N BOOKING_REQUEST | `booking_requests.requester_id` references `users.user_id`. |
 | SPACE 1:N BOOKING_REQUEST | `booking_requests.space_code` references `spaces.space_code`. |
-| SPACE M:N FACILITY | Associative relation `space_facilities(space_code, facility_id)`. |
+| SPACE 1:N FACILITY | `facilities.space_code` references `spaces.space_code`. |
 | BOOKING_REQUEST 1:N APPROVAL | `approvals.booking_id` references `booking_requests.booking_id`. |
 | USER 1:N APPROVAL | `approvals.staff_id` references `users.user_id`. |
 | BOOKING_REQUEST 1:0..1 USAGE_SESSION | `usage_sessions.booking_id` references `booking_requests.booking_id` with a unique constraint. |
@@ -345,7 +319,7 @@ Some business rules are simple relational constraints and can be implemented usi
 | Requested end time must be after requested start time. | `CHECK (requested_end_time > requested_start_time)` in `booking_requests`. |
 | Booking purpose and status must be valid. | `CHECK` constraints in `booking_requests`. |
 | Rejected approvals must include a rejection reason. | Conditional `CHECK` constraint in `approvals`. |
-| Each booking can have at most one usage session. | `UNIQUE (booking_id)` in `usage_sessions`. |
+| Each booking can have at most one usage session. | Primary key on `booking_id` in `usage_sessions`. |
 | Completed usage sessions must include end time and final condition. | Conditional `CHECK` constraint in `usage_sessions`. |
 | Maintenance completion time must be after start time. | Conditional `CHECK` constraint in `maintenance_records`. |
 | Completed maintenance must include completion time and result note. | Conditional `CHECK` constraint in `maintenance_records`. |
@@ -363,8 +337,7 @@ The schema is designed to satisfy Third Normal Form for the stated requirements.
 |---|---|
 | `users` | User attributes depend on `user_id`; email is separately unique. No repeating groups. |
 | `spaces` | Space attributes depend on `space_code`; location candidate key is unique. No repeating facility list is stored here. |
-| `facilities` | Facility attributes depend on `facility_id`; facility name is unique. |
-| `space_facilities` | Quantity and condition note depend on the full composite key `(space_code, facility_id)`. |
+| `facilities` | Facility attributes depend on `facility_id`; space details remain in `spaces`. |
 | `booking_requests` | Booking details depend on `booking_id`; user and space details remain in their own relations. |
 | `approvals` | Decision attributes depend on `booking_id`; user and booking details are referenced by foreign keys. |
 | `usage_sessions` | Actual usage details depend on `booking_id`; booking details remain in `booking_requests`. |
@@ -398,13 +371,9 @@ spaces(
 
 facilities(
     facility_id PK,
-    facility_name UK,
-    description
-)
-
-space_facilities(
-    space_code PK FK -> spaces.space_code,
-    facility_id PK FK -> facilities.facility_id,
+    space_code FK -> spaces.space_code,
+    facility_name,
+    description,
     quantity,
     condition_note
 )

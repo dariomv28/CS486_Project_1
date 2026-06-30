@@ -6,7 +6,6 @@ DELETE FROM dbo.maintenance_records;
 DELETE FROM dbo.usage_sessions;
 DELETE FROM dbo.approvals;
 DELETE FROM dbo.booking_requests;
-DELETE FROM dbo.space_facilities;
 DELETE FROM dbo.facilities;
 DELETE FROM dbo.spaces;
 DELETE FROM dbo.users;
@@ -43,41 +42,30 @@ GO
 
 SET IDENTITY_INSERT dbo.facilities ON;
 
-INSERT INTO dbo.facilities (facility_id, facility_name, description) VALUES
-(1, N'projector', N'Ceiling or portable projector for presentations.'),
-(2, N'whiteboard', N'Writing board for teaching and discussion.'),
-(3, N'microphone', N'Audio microphone for large rooms.'),
-(4, N'computer', N'Desktop computer workstation.'),
-(5, N'livestreaming equipment', N'Camera and encoder equipment for live events.'),
-(6, N'air conditioner', N'Room air-conditioning unit.'),
-(7, N'network access', N'Wired or wireless network access.'),
-(8, N'video conferencing equipment', N'Camera, speaker, and display setup for hybrid meetings.');
+INSERT INTO dbo.facilities (facility_id, space_code, facility_name, description, quantity, condition_note) VALUES
+(1, 'CS-AUD-101', N'projector', N'Ceiling or portable projector for presentations.', 2, N'Both projectors operational.'),
+(2, 'CS-AUD-101', N'whiteboard', N'Writing board for teaching and discussion.', 1, N'Large side whiteboard.'),
+(3, 'CS-AUD-101', N'microphone', N'Audio microphone for large rooms.', 4, N'Two handheld and two lapel microphones.'),
+(4, 'CS-AUD-101', N'livestreaming equipment', N'Camera and encoder equipment for live events.', 1, N'Livestreaming rack available on request.'),
+(5, 'CS-AUD-101', N'air conditioner', N'Room air-conditioning unit.', 4, N'Central air conditioning.'),
+(6, 'CS-CLS-201', N'projector', N'Ceiling or portable projector for presentations.', 1, N'Projector tested this semester.'),
+(7, 'CS-CLS-201', N'whiteboard', N'Writing board for teaching and discussion.', 2, N'Front and side boards.'),
+(8, 'CS-CLS-201', N'air conditioner', N'Room air-conditioning unit.', 1, N'Working normally.'),
+(9, 'CS-LAB-301', N'projector', N'Ceiling or portable projector for presentations.', 1, N'Projector connected to instructor machine.'),
+(10, 'CS-LAB-301', N'computer', N'Desktop computer workstation.', 40, N'Windows and Linux dual-boot workstations.'),
+(11, 'CS-LAB-301', N'network access', N'Wired or wireless network access.', 40, N'Gigabit wired access.'),
+(12, 'CS-LAB-302', N'computer', N'Desktop computer workstation.', 35, N'Network lab machines under inspection.'),
+(13, 'CS-LAB-302', N'network access', N'Wired or wireless network access.', 35, N'Core switch replacement pending.'),
+(14, 'CS-PROJ-401', N'whiteboard', N'Writing board for teaching and discussion.', 1, N'Movable whiteboard.'),
+(15, 'CS-PROJ-401', N'computer', N'Desktop computer workstation.', 10, N'High-performance workstations.'),
+(16, 'CS-PROJ-401', N'network access', N'Wired or wireless network access.', 10, N'Project VLAN available.'),
+(17, 'CS-MEET-501', N'projector', N'Ceiling or portable projector for presentations.', 1, N'Short-throw projector.'),
+(18, 'CS-MEET-501', N'video conferencing equipment', N'Camera, speaker, and display setup for hybrid meetings.', 1, N'Hybrid meeting kit.'),
+(19, 'CS-WORK-601', N'whiteboard', N'Writing board for teaching and discussion.', 3, N'Portable whiteboards.'),
+(20, 'CS-WORK-601', N'air conditioner', N'Room air-conditioning unit.', 2, N'Open-area air conditioning.'),
+(21, 'CS-WORK-601', N'network access', N'Wired or wireless network access.', 1, N'Campus Wi-Fi coverage.');
 
 SET IDENTITY_INSERT dbo.facilities OFF;
-GO
-
-INSERT INTO dbo.space_facilities (space_code, facility_id, quantity, condition_note) VALUES
-('CS-AUD-101', 1, 2, N'Both projectors operational.'),
-('CS-AUD-101', 2, 1, N'Large side whiteboard.'),
-('CS-AUD-101', 3, 4, N'Two handheld and two lapel microphones.'),
-('CS-AUD-101', 5, 1, N'Livestreaming rack available on request.'),
-('CS-AUD-101', 6, 4, N'Central air conditioning.'),
-('CS-CLS-201', 1, 1, N'Projector tested this semester.'),
-('CS-CLS-201', 2, 2, N'Front and side boards.'),
-('CS-CLS-201', 6, 1, N'Working normally.'),
-('CS-LAB-301', 1, 1, N'Projector connected to instructor machine.'),
-('CS-LAB-301', 4, 40, N'Windows and Linux dual-boot workstations.'),
-('CS-LAB-301', 7, 40, N'Gigabit wired access.'),
-('CS-LAB-302', 4, 35, N'Network lab machines under inspection.'),
-('CS-LAB-302', 7, 35, N'Core switch replacement pending.'),
-('CS-PROJ-401', 2, 1, N'Movable whiteboard.'),
-('CS-PROJ-401', 4, 10, N'High-performance workstations.'),
-('CS-PROJ-401', 7, 10, N'Project VLAN available.'),
-('CS-MEET-501', 1, 1, N'Short-throw projector.'),
-('CS-MEET-501', 8, 1, N'Hybrid meeting kit.'),
-('CS-WORK-601', 2, 3, N'Portable whiteboards.'),
-('CS-WORK-601', 6, 2, N'Open-area air conditioning.'),
-('CS-WORK-601', 7, 1, N'Campus Wi-Fi coverage.');
 GO
 
 SET IDENTITY_INSERT dbo.booking_requests ON;

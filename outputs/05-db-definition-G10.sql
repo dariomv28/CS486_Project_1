@@ -13,7 +13,6 @@ IF OBJECT_ID('dbo.maintenance_records', 'U') IS NOT NULL DROP TABLE dbo.maintena
 IF OBJECT_ID('dbo.usage_sessions', 'U') IS NOT NULL DROP TABLE dbo.usage_sessions;
 IF OBJECT_ID('dbo.approvals', 'U') IS NOT NULL DROP TABLE dbo.approvals;
 IF OBJECT_ID('dbo.booking_requests', 'U') IS NOT NULL DROP TABLE dbo.booking_requests;
-IF OBJECT_ID('dbo.space_facilities', 'U') IS NOT NULL DROP TABLE dbo.space_facilities;
 IF OBJECT_ID('dbo.facilities', 'U') IS NOT NULL DROP TABLE dbo.facilities;
 IF OBJECT_ID('dbo.spaces', 'U') IS NOT NULL DROP TABLE dbo.spaces;
 IF OBJECT_ID('dbo.users', 'U') IS NOT NULL DROP TABLE dbo.users;
@@ -75,25 +74,16 @@ GO
 
 CREATE TABLE dbo.facilities (
     facility_id INT IDENTITY(1,1) NOT NULL,
+    space_code VARCHAR(20) NOT NULL,
     facility_name NVARCHAR(100) NOT NULL,
     description NVARCHAR(MAX) NULL,
-    CONSTRAINT pk_facilities PRIMARY KEY (facility_id),
-    CONSTRAINT uq_facilities_name UNIQUE (facility_name)
-);
-GO
-
-CREATE TABLE dbo.space_facilities (
-    space_code VARCHAR(20) NOT NULL,
-    facility_id INT NOT NULL,
-    quantity INT NOT NULL CONSTRAINT df_space_facilities_quantity DEFAULT (1),
+    quantity INT NOT NULL CONSTRAINT df_facilities_quantity DEFAULT (1),
     condition_note NVARCHAR(MAX) NULL,
-    CONSTRAINT pk_space_facilities PRIMARY KEY (space_code, facility_id),
-    CONSTRAINT fk_space_facilities_space FOREIGN KEY (space_code)
+    CONSTRAINT pk_facilities PRIMARY KEY (facility_id),
+    CONSTRAINT fk_facilities_space FOREIGN KEY (space_code)
         REFERENCES dbo.spaces(space_code)
         ON DELETE CASCADE,
-    CONSTRAINT fk_space_facilities_facility FOREIGN KEY (facility_id)
-        REFERENCES dbo.facilities(facility_id),
-    CONSTRAINT chk_space_facilities_quantity CHECK (quantity > 0)
+    CONSTRAINT chk_facilities_quantity CHECK (quantity > 0)
 );
 GO
 
@@ -212,6 +202,9 @@ CREATE TABLE dbo.maintenance_records (
     )
 );
 GO
+
+CREATE INDEX idx_facilities_space
+    ON dbo.facilities (space_code);
 
 CREATE INDEX idx_booking_requests_space_time
     ON dbo.booking_requests (space_code, requested_start_time, requested_end_time);

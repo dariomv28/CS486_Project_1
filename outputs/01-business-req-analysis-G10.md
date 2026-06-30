@@ -62,30 +62,18 @@ Candidate keys:
 
 ### 3.3 Facility
 
-Represents an available facility or equipment type that may exist in spaces.
+Represents a facility or equipment item available in a specific space.
 
 Attributes:
 
 | Attribute | Description | Constraint / Domain |
 |---|---|---|
 | facility_id | Unique facility identifier. | Primary key. |
-| facility_name | Facility name. | Required, unique. Examples: projector, whiteboard, microphone, computer, livestreaming equipment, air conditioner. |
+| space_code | Space where the facility is located. | Foreign key to Space. |
+| facility_name | Facility name. | Required. Examples: projector, whiteboard, microphone, computer, livestreaming equipment, air conditioner. |
 | description | Optional details about the facility. | Optional. |
-
-### 3.4 Space Facility
-
-Associative entity showing which facilities are available in which spaces.
-
-Attributes:
-
-| Attribute | Description | Constraint / Domain |
-|---|---|---|
-| space_code | Related space. | Foreign key to Space. |
-| facility_id | Related facility. | Foreign key to Facility. |
-| quantity | Number of that facility in the space. | Positive integer, if tracked. |
+| quantity | Number of that facility item in the space. | Positive integer, default 1. |
 | condition_note | Optional note about facility condition. | Optional. |
-
-Primary key: space_code + facility_id.
 
 ### 3.5 Booking Request
 
@@ -161,7 +149,7 @@ Attributes:
 |---|---|---|
 | User submits Booking Request | User 1 : N Booking Request | Booking Request total; User partial |
 | Space receives Booking Request | Space 1 : N Booking Request | Booking Request total; Space partial |
-| Space has Facility | Space M : N Facility, resolved by Space Facility | Space Facility total to both parents |
+| Space has Facility | Space 1 : N Facility | Facility total; Space partial |
 | Booking Request has Approval | Booking Request 1 : 0..1 Approval | Approval total; Booking Request partial |
 | User makes Approval | User 1 : N Approval | Approval total; User partial |
 | Booking Request creates Usage Session | Booking Request 1 : 0..1 Usage Session | Usage Session total; Booking Request partial |
@@ -192,10 +180,9 @@ Attributes:
 
 ### 5.3 Facility Rules
 
-1. A facility type may be shared by many spaces.
-2. A space may contain many facility types.
-3. The same facility should not be listed twice for the same space.
-4. If quantity is stored, quantity must be positive.
+1. Each facility must belong to exactly one space.
+2. A space may contain many facilities.
+3. Each facility must have a positive quantity.
 
 ### 5.4 Booking Rules
 
@@ -257,7 +244,7 @@ The system can derive or report the following information from the stored entiti
 
 1. The phrase "university account" is represented by the User entity and its account status.
 2. Facility staff and facility managers are modeled as users with specific roles, not as a separate staff table.
-3. Approval history may be stored as multiple approval records per booking; the latest valid decision controls the booking status.
+3. A booking has at most one approval record.
 4. Incident reporting is covered by the Maintenance Record entity because the requirements describe reporting facility problems and tracking their resolution.
 5. The no-overlap rule applies to approved active reservations for the same space. Rejected, cancelled, completed, and no-show bookings do not block new bookings.
 6. Space status and booking status are related but not identical. A space may be generally available while still unavailable during already approved booking periods.
@@ -268,8 +255,7 @@ The system can derive or report the following information from the stored entiti
 |---|---|
 | User | Stores university account holders and their roles. |
 | Space | Stores managed physical spaces and their booking status. |
-| Facility | Stores facility or equipment types. |
-| Space Facility | Resolves the many-to-many relationship between spaces and facilities. |
+| Facility | Stores facilities available in each space. |
 | Booking Request | Stores requested reservations and booking lifecycle status. |
 | Approval | Stores staff or manager decisions on booking requests. |
 | Usage Session | Stores actual check-in and completion information. |

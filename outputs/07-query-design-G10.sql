@@ -33,7 +33,7 @@ OUTER APPLY (
         ap.staff_id
     FROM dbo.approvals AS ap
     WHERE ap.booking_id = br.booking_id
-    ORDER BY ap.decision_time DESC, ap.approval_id DESC
+    ORDER BY ap.decision_time DESC, ap.booking_id DESC
 ) AS a
 LEFT JOIN dbo.users AS approver ON approver.user_id = a.staff_id
 LEFT JOIN dbo.usage_sessions AS us ON us.booking_id = br.booking_id
@@ -57,10 +57,9 @@ SELECT
     s.room_number,
     s.capacity,
     s.current_status,
-    STRING_AGG(CONCAT(f.facility_name, N' (', sf.quantity, N')'), N', ') AS facilities
+    STRING_AGG(CONCAT(f.facility_name, N' (', f.quantity, N')'), N', ') AS facilities
 FROM dbo.spaces AS s
-LEFT JOIN dbo.space_facilities AS sf ON sf.space_code = s.space_code
-LEFT JOIN dbo.facilities AS f ON f.facility_id = sf.facility_id
+LEFT JOIN dbo.facilities AS f ON f.space_code = s.space_code
 WHERE s.current_status = N'available'
   AND s.capacity >= @minimum_capacity
   AND NOT EXISTS (
@@ -143,17 +142,12 @@ GO
 -- Utility: Separates pending requests from rejected requests and displays the latest decision context for follow-up.
 WITH latest_approval AS (
     SELECT
-        ap.approval_id,
         ap.booking_id,
         ap.staff_id,
         ap.decision,
         ap.decision_time,
         ap.decision_note,
-        ap.rejection_reason,
-        ROW_NUMBER() OVER (
-            PARTITION BY ap.booking_id
-            ORDER BY ap.decision_time DESC, ap.approval_id DESC
-        ) AS decision_rank
+        ap.rejection_reason
     FROM dbo.approvals AS ap
 )
 SELECT
@@ -174,7 +168,6 @@ JOIN dbo.users AS u ON u.user_id = br.requester_id
 JOIN dbo.spaces AS s ON s.space_code = br.space_code
 LEFT JOIN latest_approval AS la
     ON la.booking_id = br.booking_id
-   AND la.decision_rank = 1
 LEFT JOIN dbo.users AS approver ON approver.user_id = la.staff_id
 WHERE br.booking_status IN (N'pending', N'rejected')
 ORDER BY br.booking_status, br.requested_start_time;
@@ -199,7 +192,7 @@ JOIN dbo.spaces AS s ON s.space_code = br.space_code
 JOIN dbo.users AS u ON u.user_id = br.requester_id
 LEFT JOIN dbo.usage_sessions AS us ON us.booking_id = br.booking_id
 WHERE br.booking_status = N'approved'
-  AND us.session_id IS NULL
+  AND us.booking_id IS NULL
 ORDER BY br.requested_start_time;
 GO
 
@@ -209,13 +202,12 @@ GO
 -- Utility: Combines space status, facility counts, and unresolved maintenance counts to support room readiness checks.
 WITH facility_summary AS (
     SELECT
-        sf.space_code,
+        f.space_code,
         COUNT(*) AS facility_type_count,
-        SUM(sf.quantity) AS total_facility_items,
+        SUM(f.quantity) AS total_facility_items,
         STRING_AGG(f.facility_name, N', ') AS facility_list
-    FROM dbo.space_facilities AS sf
-    JOIN dbo.facilities AS f ON f.facility_id = sf.facility_id
-    GROUP BY sf.space_code
+    FROM dbo.facilities AS f
+    GROUP BY f.space_code
 ),
 maintenance_summary AS (
     SELECT
