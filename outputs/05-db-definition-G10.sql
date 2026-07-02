@@ -260,6 +260,25 @@ BEGIN
         THROW 51001, 'Only active users can submit or hold booking requests.', 1;
     END;
 
+    -- FIX: Do not allow core booking information to be changed after approval, check-in, or completion.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS i
+        JOIN deleted AS d ON d.booking_id = i.booking_id
+        WHERE d.booking_status IN (N'approved', N'checked in', N'completed')
+          AND (
+              i.requester_id <> d.requester_id
+              OR i.space_code <> d.space_code
+              OR i.requested_start_time <> d.requested_start_time
+              OR i.requested_end_time <> d.requested_end_time
+              OR i.purpose_of_use <> d.purpose_of_use
+              OR i.expected_participants <> d.expected_participants
+          )
+    )
+    BEGIN
+        THROW 51009, 'Booking details cannot be changed after the booking has been approved, checked in, or completed.', 1;
+    END;
+
     IF EXISTS (
         SELECT 1
         FROM inserted AS i
@@ -309,14 +328,16 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- FIX: Approver must be an active facility staff or facility manager.
     IF EXISTS (
         SELECT 1
         FROM inserted AS i
         JOIN dbo.users AS u ON u.user_id = i.staff_id
         WHERE u.role NOT IN (N'facility staff', N'facility manager')
+           OR u.account_status <> 'active'
     )
     BEGIN
-        THROW 51005, 'Only facility staff or facility managers can approve or reject booking requests.', 1;
+        THROW 51005, 'Only active facility staff or facility managers can approve or reject booking requests.', 1;
     END;
 
     UPDATE br
@@ -332,6 +353,18 @@ AFTER INSERT, UPDATE
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    -- FIX: Check-in user must be an active facility staff or facility manager.
+    IF EXISTS (
+        SELECT 1
+        FROM inserted AS i
+        JOIN dbo.users AS u ON u.user_id = i.checked_in_by
+        WHERE u.role NOT IN (N'facility staff', N'facility manager')
+           OR u.account_status <> 'active'
+    )
+    BEGIN
+        THROW 51008, 'Only active facility staff or facility managers can check in bookings.', 1;
+    END;
 
     IF EXISTS (
         SELECT 1
@@ -362,15 +395,19 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- FIX: Assigned maintenance staff must be an active facility staff or facility manager.
     IF EXISTS (
         SELECT 1
         FROM inserted AS i
         JOIN dbo.users AS u ON u.user_id = i.assigned_staff_id
         WHERE i.assigned_staff_id IS NOT NULL
-          AND u.role NOT IN (N'facility staff', N'facility manager')
+          AND (
+              u.role NOT IN (N'facility staff', N'facility manager')
+              OR u.account_status <> 'active'
+          )
     )
     BEGIN
-        THROW 51007, 'Maintenance records can be assigned only to facility staff or facility managers.', 1;
+        THROW 51007, 'Maintenance records can be assigned only to active facility staff or facility managers.', 1;
     END;
 
     UPDATE mr
