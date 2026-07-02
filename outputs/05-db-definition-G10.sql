@@ -291,21 +291,10 @@ BEGIN
         THROW 51005, 'Only facility staff or facility managers can approve or reject booking requests.', 1;
     END;
 
-    WITH latest_decision AS (
-        SELECT
-            i.booking_id,
-            i.decision,
-            ROW_NUMBER() OVER (
-                PARTITION BY i.booking_id
-                ORDER BY i.decision_time DESC, i.booking_id DESC
-            ) AS decision_rank
-        FROM inserted AS i
-    )
     UPDATE br
-    SET booking_status = ld.decision
+    SET booking_status = i.decision
     FROM dbo.booking_requests AS br
-    JOIN latest_decision AS ld ON ld.booking_id = br.booking_id
-    WHERE ld.decision_rank = 1;
+    JOIN inserted AS i ON i.booking_id = br.booking_id;
 END;
 GO
 
