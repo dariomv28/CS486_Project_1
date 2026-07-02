@@ -263,7 +263,7 @@ Business constraints:
 ## 4. Foreign Key Relationship Summary
 
 | Child Relation | Foreign Key | Parent Relation | Relationship |
-|---|---|---|---|---|
+|---|---|---|---|
 | `facilities` | `space_code` | `spaces(space_code)` | A space has facilities. |
 | `booking_requests` | `requester_id` | `users(user_id)` | A user submits booking requests. |
 | `booking_requests` | `space_code` | `spaces(space_code)` | A booking request selects one space. |

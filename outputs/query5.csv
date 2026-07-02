@@ -1,0 +1,3 @@
+booking_id,booking_status,requested_start_time,requested_end_time,purpose_of_use,requester_name,space_name,decision,decision_time,approver_name,decision_note,rejection_reason
+7,pending,2026-08-08 08:00:00,2026-08-08 10:00:00,examination,Tran Bao Chau,Classroom A101,NULL,NULL,NULL,NULL,NULL
+3,rejected,2026-08-06 14:00:00,2026-08-06 16:00:00,student activity,Nguyen Minh An,Computer Laboratory B201,rejected,2026-07-21 11:00:00,Dang Gia Huy,Request rejected because the activity requires special setup not available in this lab.,Special setup is not available.

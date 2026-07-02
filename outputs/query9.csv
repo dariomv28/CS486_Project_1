@@ -1,0 +1,5 @@
+requester_role,total_booking_count,cancelled_count,rejected_count,no_show_count,exception_rate_percent
+department administrator,1,1,0,0,100.00
+student,4,0,1,1,50.00
+lecturer,3,0,0,0,0.00
+teaching assistant,1,0,0,0,0.00

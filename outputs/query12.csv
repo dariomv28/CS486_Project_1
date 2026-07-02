@@ -1,0 +1,12 @@
+space_code,space_name,space_type,current_status,missing_facility
+A101,Classroom A101,classroom,under maintenance,Air conditioner
+B201,Computer Laboratory B201,computer laboratory,available,Whiteboard
+C301,Auditorium C301,auditorium,available,Air conditioner
+C301,Auditorium C301,auditorium,available,Projector
+C301,Auditorium C301,auditorium,available,Whiteboard
+D101,Meeting Room D101,meeting room,available,Air conditioner
+D101,Meeting Room D101,meeting room,available,Projector
+E101,Student Workspace E101,student workspace,under maintenance,Projector
+F101,Temporarily Closed Classroom F101,classroom,temporarily closed,Air conditioner
+F101,Temporarily Closed Classroom F101,classroom,temporarily closed,Projector
+F101,Temporarily Closed Classroom F101,classroom,temporarily closed,Whiteboard

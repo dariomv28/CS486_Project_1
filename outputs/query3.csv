@@ -1,0 +1,4 @@
+space_code,space_name,space_type,active_or_confirmed_booking_count,reserved_hours,total_expected_participants,average_capacity_use_percent
+C301,Auditorium C301,auditorium,2,5.000000,270,67.50
+A101,Classroom A101,classroom,2,4.000000,80,66.67
+D101,Meeting Room D101,meeting room,1,1.000000,10,50.00

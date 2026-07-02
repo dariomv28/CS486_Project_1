@@ -1,0 +1,3 @@
+maintenance_id,maintenance_status,problem_type,start_time,space_code,space_name,space_status,reporter_name,assigned_staff_name,days_open,problem_description
+2,in progress,network problem,2026-07-25 09:00:00,E101,Student Workspace E101,under maintenance,Nguyen Minh An,Dang Gia Huy,18,Wi-Fi connection is unstable in the student workspace.
+1,assigned,broken projector,2026-07-25 08:00:00,A101,Classroom A101,under maintenance,Le Quang Minh,Nguyen Thi Mai,18,The projector sometimes loses signal during lectures.
