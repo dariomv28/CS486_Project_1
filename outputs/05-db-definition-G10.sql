@@ -9,6 +9,9 @@ IF OBJECT_ID('dbo.trg_approvals_validate_and_sync', 'TR') IS NOT NULL DROP TRIGG
 IF OBJECT_ID('dbo.trg_booking_requests_validate', 'TR') IS NOT NULL DROP TRIGGER dbo.trg_booking_requests_validate;
 IF OBJECT_ID('dbo.trg_maintenance_records_validate_and_sync', 'TR') IS NOT NULL DROP TRIGGER dbo.trg_maintenance_records_validate_and_sync;
 
+IF OBJECT_ID('dbo.fn_time_ranges_overlap', 'FN') IS NOT NULL DROP FUNCTION dbo.fn_time_ranges_overlap;
+GO
+
 IF OBJECT_ID('dbo.maintenance_records', 'U') IS NOT NULL DROP TABLE dbo.maintenance_records;
 IF OBJECT_ID('dbo.usage_sessions', 'U') IS NOT NULL DROP TABLE dbo.usage_sessions;
 IF OBJECT_ID('dbo.approvals', 'U') IS NOT NULL DROP TABLE dbo.approvals;
@@ -219,6 +222,27 @@ CREATE INDEX idx_maintenance_records_assigned_staff
     ON dbo.maintenance_records (assigned_staff_id);
 GO
 
+CREATE FUNCTION dbo.fn_time_ranges_overlap (
+    @start_time DATETIME2(0),
+    @end_time DATETIME2(0),
+    @existing_start_time DATETIME2(0),
+    @existing_end_time DATETIME2(0)
+)
+RETURNS BIT
+AS
+BEGIN
+    DECLARE @is_overlap BIT = 0;
+
+    IF @start_time < @existing_end_time
+       AND @end_time > @existing_start_time
+    BEGIN
+        SET @is_overlap = 1;
+    END;
+
+    RETURN @is_overlap;
+END;
+GO
+
 CREATE TRIGGER dbo.trg_booking_requests_validate
 ON dbo.booking_requests
 AFTER INSERT, UPDATE
@@ -264,8 +288,12 @@ BEGIN
             ON existing.space_code = i.space_code
            AND existing.booking_id <> i.booking_id
            AND existing.booking_status IN (N'approved', N'checked in')
-           AND i.requested_start_time < existing.requested_end_time
-           AND i.requested_end_time > existing.requested_start_time
+           AND dbo.fn_time_ranges_overlap(
+               i.requested_start_time,
+               i.requested_end_time,
+               existing.requested_start_time,
+               existing.requested_end_time
+           ) = 1
         WHERE i.booking_status IN (N'approved', N'checked in')
     )
     BEGIN

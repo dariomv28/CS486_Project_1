@@ -67,8 +67,12 @@ WHERE s.current_status = N'available'
       FROM dbo.booking_requests AS br
       WHERE br.space_code = s.space_code
         AND br.booking_status IN (N'approved', N'checked in')
-        AND @requested_start_time < br.requested_end_time
-        AND @requested_end_time > br.requested_start_time
+        AND dbo.fn_time_ranges_overlap(
+            @requested_start_time,
+            @requested_end_time,
+            br.requested_start_time,
+            br.requested_end_time
+        ) = 1
   )
 GROUP BY
     s.space_code,
