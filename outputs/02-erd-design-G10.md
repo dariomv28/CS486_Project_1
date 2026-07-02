@@ -12,9 +12,8 @@ The design uses one general `USER` entity for all account holders. Specific resp
 erDiagram
     USER ||--o{ BOOKING_REQUEST : submits
     SPACE ||--o{ BOOKING_REQUEST : receives
-    SPACE ||--o{ SPACE_FACILITY : contains
-    FACILITY ||--o{ SPACE_FACILITY : appears_in
-    BOOKING_REQUEST ||--o{ APPROVAL : has_decision
+    SPACE ||--o{ FACILITY : contains
+    BOOKING_REQUEST ||--o| APPROVAL : has_decision
     USER ||--o{ APPROVAL : makes
     BOOKING_REQUEST ||--o| USAGE_SESSION : produces
     USER ||--o{ USAGE_SESSION : checks_in
@@ -46,13 +45,9 @@ erDiagram
 
     FACILITY {
         int facility_id PK
-        string facility_name UK
+        string space_code FK
+        string facility_name
         string description
-    }
-
-    SPACE_FACILITY {
-        string space_code PK, FK
-        int facility_id PK, FK
         int quantity
         string condition_note
     }
@@ -70,8 +65,7 @@ erDiagram
     }
 
     APPROVAL {
-        int approval_id PK
-        int booking_id FK
+        int booking_id PK, FK
         string staff_id FK
         string decision
         datetime decision_time
@@ -80,8 +74,7 @@ erDiagram
     }
 
     USAGE_SESSION {
-        int session_id PK
-        int booking_id FK, UK
+        int booking_id PK, FK
         datetime actual_start_time
         string checked_in_by FK
         string initial_condition
@@ -144,32 +137,20 @@ Candidate key: `building + floor + room_number`.
 
 ### 3.3 FACILITY
 
-Stores facility or equipment types that can be available inside spaces.
+Stores facility or equipment items available in specific spaces.
 
 Key attributes:
 
 | Attribute | Type / Domain | Key Role | Description |
 |---|---|---|---|
-| facility_id | Identifier | Primary key | Unique identifier for each facility type. |
-| facility_name | Text | Candidate key | Facility name such as projector, whiteboard, microphone, computer, livestreaming equipment, or air conditioner. |
+| facility_id | Identifier | Primary key | Unique identifier for each facility item. |
+| space_code | Identifier | Foreign key | References the space containing the facility. |
+| facility_name | Text | Non-key | Facility name such as projector, whiteboard, microphone, computer, or air conditioner. |
 | description | Text | Non-key | Optional facility description. |
-
-### 3.4 SPACE_FACILITY
-
-Associative entity resolving the many-to-many relationship between `SPACE` and `FACILITY`.
-
-Key attributes:
-
-| Attribute | Type / Domain | Key Role | Description |
-|---|---|---|---|
-| space_code | Identifier | Primary key, foreign key | References the space containing the facility. |
-| facility_id | Identifier | Primary key, foreign key | References the facility available in the space. |
 | quantity | Integer | Non-key | Number of facility items in the space. |
-| condition_note | Text | Non-key | Optional condition note for that facility in that space. |
+| condition_note | Text | Non-key | Optional condition note for the facility in that space. |
 
-Composite primary key: `space_code + facility_id`.
-
-### 3.5 BOOKING_REQUEST
+### 3.4 BOOKING_REQUEST
 
 Stores requests made by users to reserve a space for a specific period and purpose.
 
@@ -187,7 +168,7 @@ Key attributes:
 | booking_status | Controlled text | Non-key | pending, approved, rejected, cancelled, checked in, completed, or no-show. |
 | created_at | Date/time | Non-key | Time the booking request was created. |
 
-### 3.6 APPROVAL
+### 3.5 APPROVAL
 
 Stores approval or rejection decisions made by facility staff or facility managers.
 
@@ -195,15 +176,14 @@ Key attributes:
 
 | Attribute | Type / Domain | Key Role | Description |
 |---|---|---|---|
-| approval_id | Identifier | Primary key | Unique approval record identifier. |
-| booking_id | Identifier | Foreign key | References the booking request being decided. |
+| booking_id | Identifier | Primary key, foreign key | References the booking request being decided; uniquely identifies the approval. |
 | staff_id | Identifier | Foreign key | References the facility staff member or facility manager making the decision. |
 | decision | Controlled text | Non-key | approved or rejected. |
 | decision_time | Date/time | Non-key | Time of approval or rejection. |
 | decision_note | Text | Non-key | Optional note about the decision. |
 | rejection_reason | Text | Non-key | Required when the decision is rejected. |
 
-### 3.7 USAGE_SESSION
+### 3.6 USAGE_SESSION
 
 Stores the actual check-in and completion details for an approved booking.
 
@@ -211,8 +191,7 @@ Key attributes:
 
 | Attribute | Type / Domain | Key Role | Description |
 |---|---|---|---|
-| session_id | Identifier | Primary key | Unique usage session identifier. |
-| booking_id | Identifier | Foreign key, candidate key | References the booking used for the session; unique to enforce at most one session per booking. |
+| booking_id | Identifier | Primary key, foreign key | References the booking used for the session; uniquely identifies the usage session. |
 | actual_start_time | Date/time | Non-key | Actual check-in/start time. |
 | checked_in_by | Identifier | Foreign key | References the user who performed check-in. |
 | initial_condition | Text | Non-key | Condition of the space at check-in. |
@@ -220,7 +199,7 @@ Key attributes:
 | final_condition | Text | Non-key | Condition of the space at completion. |
 | usage_notes | Text | Non-key | Notes recorded after usage. |
 
-### 3.8 MAINTENANCE_RECORD
+### 3.7 MAINTENANCE_RECORD
 
 Stores reported space problems, assignment details, progress, and results.
 
@@ -245,9 +224,8 @@ Key attributes:
 |---|---|---|---|---|
 | USER submits BOOKING_REQUEST | USER 0..N, BOOKING_REQUEST 1..1 | BOOKING_REQUEST is mandatory; USER is optional | One user can submit many bookings; each booking has exactly one requester | A request cannot exist without a requester. |
 | SPACE receives BOOKING_REQUEST | SPACE 0..N, BOOKING_REQUEST 1..1 | BOOKING_REQUEST is mandatory; SPACE is optional | One space can receive many bookings over time; each booking is for one space | A request cannot exist without a selected space. |
-| SPACE contains SPACE_FACILITY | SPACE 0..N, SPACE_FACILITY 1..1 | SPACE_FACILITY is mandatory; SPACE is optional | One space can list many facilities; each space-facility row belongs to one space | A space may have no facilities recorded. |
-| FACILITY appears in SPACE_FACILITY | FACILITY 0..N, SPACE_FACILITY 1..1 | SPACE_FACILITY is mandatory; FACILITY is optional | One facility type can appear in many spaces; each space-facility row references one facility type | A facility type may exist before being assigned to a space. |
-| BOOKING_REQUEST has APPROVAL | BOOKING_REQUEST 0..N, APPROVAL 1..1 | APPROVAL is mandatory; BOOKING_REQUEST is optional | A pending booking may have no approval; each approval belongs to one booking | Multiple approval records allow decision history. |
+| SPACE contains FACILITY | SPACE 0..N, FACILITY 1..1 | FACILITY is mandatory; SPACE is optional | One space can have many facilities; each facility belongs to exactly one space | A space may have no facilities recorded. |
+| BOOKING_REQUEST has APPROVAL | BOOKING_REQUEST 0..1, APPROVAL 1..1 | APPROVAL is mandatory; BOOKING_REQUEST is optional | A pending booking may have no approval; each approval belongs to one booking | A booking can have at most one approval record. |
 | USER makes APPROVAL | USER 0..N, APPROVAL 1..1 | APPROVAL is mandatory; USER is optional | One authorized staff user can make many approval decisions; each decision has one staff member | Staff role must be facility staff or facility manager. |
 | BOOKING_REQUEST produces USAGE_SESSION | BOOKING_REQUEST 0..1, USAGE_SESSION 1..1 | USAGE_SESSION is mandatory; BOOKING_REQUEST is optional | A booking can produce at most one usage session; each session belongs to one booking | Rejected, cancelled, or no-show bookings may have no session. |
 | USER checks in USAGE_SESSION | USER 0..N, USAGE_SESSION 1..1 | USAGE_SESSION is mandatory; USER is optional | One user can check in many sessions; each session records one check-in user | The check-in user may be requester or staff depending on policy. |
@@ -263,9 +241,7 @@ Key attributes:
 | BOOKING_REQUEST in USER | Total | Every booking request must have exactly one requester. |
 | SPACE in BOOKING_REQUEST | Partial | A space may exist without any booking requests. |
 | BOOKING_REQUEST in SPACE | Total | Every booking request must be for exactly one space. |
-| SPACE in SPACE_FACILITY | Partial | A space may have no facilities recorded yet. |
-| FACILITY in SPACE_FACILITY | Partial | A facility type may exist without being assigned to a space. |
-| SPACE_FACILITY in SPACE and FACILITY | Total | Every space-facility row must reference one valid space and one valid facility. |
+| FACILITY in SPACE | Total | Every facility must reference exactly one space. |
 | BOOKING_REQUEST in APPROVAL | Partial | A booking may remain pending with no approval record yet. |
 | APPROVAL in BOOKING_REQUEST and USER | Total | Every approval must refer to one booking and one approving staff user. |
 | BOOKING_REQUEST in USAGE_SESSION | Partial | A booking may never produce a usage session if rejected, cancelled, or no-show. |
@@ -284,7 +260,7 @@ Key attributes:
 6. Only users with role `facility staff` or `facility manager` may appear as approval staff.
 7. Usage sessions are separate from booking requests because requested times may differ from actual start and end times.
 8. A booking request can have at most one usage session.
-9. Facilities have a many-to-many relationship with spaces, resolved through `SPACE_FACILITY`.
+9. Each facility belongs to exactly one space; a space may have multiple facilities.
 10. Maintenance records connect a space, a reporter, and optionally an assigned staff member to support incident reporting and resolution.
 
 ## 7. Notes for Logical Design
@@ -296,10 +272,9 @@ The conceptual design will be converted into the relational schema in Task 3. Th
 | USER | `users` |
 | SPACE | `spaces` |
 | FACILITY | `facilities` |
-| SPACE_FACILITY | `space_facilities` |
 | BOOKING_REQUEST | `booking_requests` |
 | APPROVAL | `approvals` |
 | USAGE_SESSION | `usage_sessions` |
 | MAINTENANCE_RECORD | `maintenance_records` |
 
-The many-to-many relationship between spaces and facilities requires the associative relation `space_facilities`. Other one-to-many relationships will be implemented using foreign keys. The one-to-zero-or-one relationship between `BOOKING_REQUEST` and `USAGE_SESSION` will require a unique constraint on `usage_sessions.booking_id`.
+Each facility belongs to exactly one space via a foreign key on `facilities.space_code`. The one-to-zero-or-one relationship between `BOOKING_REQUEST` and `USAGE_SESSION` is enforced by `usage_sessions.booking_id` as the primary key.
