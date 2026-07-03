@@ -1,0 +1,10 @@
+booking_date,booking_status,purpose_of_use,booking_count,expected_participant_total,reserved_hours
+2026-08-01,completed,workshop,1,120,2.000000
+2026-08-04,checked in,meeting,1,10,1.000000
+2026-08-05,approved,lecture,1,50,2.000000
+2026-08-05,approved,seminar,1,30,2.000000
+2026-08-06,rejected,student activity,1,35,2.000000
+2026-08-07,cancelled,administrative event,1,12,1.000000
+2026-08-08,pending,examination,1,45,2.000000
+2026-08-10,approved,examination,1,150,3.000000
+2026-08-11,no-show,meeting,1,8,1.000000

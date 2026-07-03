@@ -1,0 +1,3 @@
+maintenance_id,problem_type,maintenance_status,space_code,space_name,assigned_staff_name,start_time,completion_time,resolution_hours,result_note
+3,damaged furniture,completed,C301,Auditorium C301,Truong Thanh Binh,2026-07-18 08:00:00,2026-07-19 16:00:00,32,Damaged chairs were replaced.
+4,cleaning issue,cancelled,D101,Meeting Room D101,NULL,2026-07-19 08:00:00,2026-07-19 09:30:00,1,Request cancelled because the room had already been cleaned.

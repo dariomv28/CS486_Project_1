@@ -1,0 +1,10 @@
+booking_id,booking_status,requested_start_time,requested_end_time,purpose_of_use,expected_participants,space_code,space_name,space_type,requester_name,requester_role,latest_decision,decision_time,approver_name,actual_start_time,actual_end_time
+5,completed,2026-08-01 13:00:00,2026-08-01 15:00:00,workshop,120,C301,Auditorium C301,auditorium,Le Quang Minh,lecturer,approved,2026-07-22 09:00:00,Truong Thanh Binh,2026-08-01 13:02:00,2026-08-01 15:05:00
+4,checked in,2026-08-04 09:00:00,2026-08-04 10:00:00,meeting,10,D101,Meeting Room D101,meeting room,Tran Bao Chau,student,approved,2026-07-21 12:00:00,Nguyen Thi Mai,2026-08-04 08:55:00,NULL
+1,approved,2026-08-05 08:00:00,2026-08-05 10:00:00,lecture,50,A101,Classroom A101,classroom,Le Quang Minh,lecturer,approved,2026-07-20 10:00:00,Dang Gia Huy,NULL,NULL
+2,approved,2026-08-05 10:00:00,2026-08-05 12:00:00,seminar,30,A101,Classroom A101,classroom,Pham Hoang Long,teaching assistant,approved,2026-07-20 10:15:00,Truong Thanh Binh,NULL,NULL
+3,rejected,2026-08-06 14:00:00,2026-08-06 16:00:00,student activity,35,B201,Computer Laboratory B201,computer laboratory,Nguyen Minh An,student,rejected,2026-07-21 11:00:00,Dang Gia Huy,NULL,NULL
+6,cancelled,2026-08-07 15:00:00,2026-08-07 16:00:00,administrative event,12,E101,Student Workspace E101,student workspace,Vo Thanh Dat,department administrator,NULL,NULL,NULL,NULL,NULL
+7,pending,2026-08-08 08:00:00,2026-08-08 10:00:00,examination,45,A101,Classroom A101,classroom,Tran Bao Chau,student,NULL,NULL,NULL,NULL,NULL
+8,approved,2026-08-10 08:00:00,2026-08-10 11:00:00,examination,150,C301,Auditorium C301,auditorium,Le Quang Minh,lecturer,approved,2026-07-23 10:00:00,Dang Gia Huy,NULL,NULL
+9,no-show,2026-08-11 14:00:00,2026-08-11 15:00:00,meeting,8,D101,Meeting Room D101,meeting room,Nguyen Minh An,student,approved,2026-07-24 09:00:00,Nguyen Thi Mai,NULL,NULL

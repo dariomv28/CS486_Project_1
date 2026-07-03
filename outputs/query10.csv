@@ -1,0 +1,4 @@
+booking_id,requested_start_time,requested_end_time,space_code,space_name,requester_name,requester_email,hours_since_scheduled_end
+1,2026-08-05 08:00:00,2026-08-05 10:00:00,A101,Classroom A101,Le Quang Minh,minh.le@hcmus.edu.vn,158
+2,2026-08-05 10:00:00,2026-08-05 12:00:00,A101,Classroom A101,Pham Hoang Long,long.pham@hcmus.edu.vn,156
+8,2026-08-10 08:00:00,2026-08-10 11:00:00,C301,Auditorium C301,Le Quang Minh,minh.le@hcmus.edu.vn,37

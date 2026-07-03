@@ -1,0 +1,8 @@
+space_code,space_name,space_type,current_status,capacity,facility_type_count,total_facility_items,facility_list,unresolved_maintenance_count
+A101,Classroom A101,classroom,under maintenance,60,3,4,"Projector, Whiteboard, Microphone",1
+E101,Student Workspace E101,student workspace,under maintenance,30,2,2,"Whiteboard, Air conditioner",1
+B201,Computer Laboratory B201,computer laboratory,available,40,3,43,"Computer, Projector, Air conditioner",0
+C301,Auditorium C301,auditorium,available,200,2,5,"Livestreaming equipment, Microphone",0
+D101,Meeting Room D101,meeting room,available,20,2,2,"TV screen, Whiteboard",0
+F101,Temporarily Closed Classroom F101,classroom,temporarily closed,50,0,0,NULL,0
+G001,Retired Laboratory G001,project laboratory,retired,25,0,0,NULL,0

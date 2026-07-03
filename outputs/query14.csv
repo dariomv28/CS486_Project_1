@@ -1,0 +1,4 @@
+maintenance_id,maintenance_status,problem_type,maintenance_start_time,booking_id,booking_status,requested_start_time,requested_end_time,space_code,space_name,requester_name
+1,assigned,broken projector,2026-07-25 08:00:00,1,approved,2026-08-05 08:00:00,2026-08-05 10:00:00,A101,Classroom A101,Le Quang Minh
+1,assigned,broken projector,2026-07-25 08:00:00,2,approved,2026-08-05 10:00:00,2026-08-05 12:00:00,A101,Classroom A101,Pham Hoang Long
+1,assigned,broken projector,2026-07-25 08:00:00,7,pending,2026-08-08 08:00:00,2026-08-08 10:00:00,A101,Classroom A101,Tran Bao Chau

@@ -1,0 +1,4 @@
+staff_id,staff_name,role,decision_count,approved_count,rejected_count,average_response_hours
+FS001,Dang Gia Huy,facility staff,3,2,1,1.17
+FS002,Nguyen Thi Mai,facility staff,2,2,0,1.00
+FM001,Truong Thanh Binh,facility manager,2,2,0,1.13

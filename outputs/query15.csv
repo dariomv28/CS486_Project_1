@@ -1,0 +1,6 @@
+booking_month,space_type,purpose_of_use,confirmed_booking_count,reserved_hours,expected_participants,average_capacity_use_percent
+2026-08,auditorium,examination,1,3.000000,150,75.00
+2026-08,auditorium,workshop,1,2.000000,120,60.00
+2026-08,classroom,lecture,1,2.000000,50,83.33
+2026-08,classroom,seminar,1,2.000000,30,50.00
+2026-08,meeting room,meeting,1,1.000000,10,50.00

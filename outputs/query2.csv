@@ -1,0 +1,3 @@
+space_code,space_name,space_type,building,floor,room_number,capacity,current_status,facilities
+C301,Auditorium C301,auditorium,Building C,3,301,200,available,"Livestreaming equipment (1), Microphone (4)"
+B201,Computer Laboratory B201,computer laboratory,Building B,2,201,40,available,"Computer (40), Projector (1), Air conditioner (2)"
