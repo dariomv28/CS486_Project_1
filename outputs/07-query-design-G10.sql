@@ -9,6 +9,7 @@ GO
 -- Business question: Which booking requests are scheduled or recently processed, and what is their approval and usage status?
 -- Target user(s): Facility staff, facility managers, department administrators.
 -- Utility: Gives staff a joined operational schedule showing requester, space, booking status, latest decision, and check-in/completion information.
+-- Mỗi yêu cầu đặt phòng hiện đang ở trạng thái nào, ai đặt, đặt phòng nào, đã được ai duyệt chưa, và đã check-in/check-out hay chưa?
 SELECT
     br.booking_id,
     br.booking_status,
@@ -47,6 +48,7 @@ GO
 -- Business question: Which spaces are available for a requested time period and have enough capacity?
 -- Target user(s): Students, lecturers, teaching assistants, department administrators.
 -- Utility: Helps requesters and staff identify bookable spaces before submitting or approving a reservation.
+-- Lấy danh sách những space trống ứng với khung giờ cho trước
 DECLARE @requested_start_time DATETIME2(0) = '2026-08-05T08:00:00';
 DECLARE @requested_end_time DATETIME2(0) = '2026-08-05T12:00:00';
 DECLARE @minimum_capacity INT = 30;
@@ -100,7 +102,7 @@ SELECT
     COUNT(br.booking_id) AS active_or_confirmed_booking_count,
     SUM(DATEDIFF(MINUTE, br.requested_start_time, br.requested_end_time)) / 60.0 AS reserved_hours,
     SUM(br.expected_participants) AS total_expected_participants,
-    CAST(AVG(CAST(br.expected_participants AS DECIMAL(10, 2)) / s.capacity * 100.0) AS DECIMAL(10, 2)) AS average_capacity_use_percent
+    CAST(AVG(CAST(br.expected_participants AS DECIMAL(10, 2)) / s.capacity * 100.0) AS DECIMAL(10, 2)) AS average_capacity_use_percent -- trung bình mỗi lần booking phòng dùng được bao nhiêu sức chứa.
 FROM dbo.spaces AS s
 JOIN dbo.booking_requests AS br ON br.space_code = s.space_code
 WHERE br.booking_status IN (N'approved', N'checked in', N'completed')
@@ -209,6 +211,8 @@ GO
 -- Business question: What is the complete facility inventory for each space, including maintenance exposure?
 -- Target user(s): Facility managers, facility staff.
 -- Utility: Combines space status, facility counts, and unresolved maintenance counts to support room readiness checks.
+-- Liệt kê tình trạng cơ sở vật chất của từng phòng, gồm phòng đó có những thiết bị gì, có bao nhiêu thiết bị, 
+-- trạng thái phòng ra sao, và hiện có bao nhiêu sự cố bảo trì chưa xử lý.
 WITH facility_summary AS (
     SELECT
         f.space_code,
@@ -246,6 +250,7 @@ GO
 -- Business question: How many bookings exist by day, status, and purpose?
 -- Target user(s): Facility managers, department administrators.
 -- Utility: Gives a daily booking demand summary for workload planning and activity-type analysis.
+-- Thống kê số lượng booking theo từng ngày, trạng thái và mục đích sử dụng.
 SELECT
     CAST(br.requested_start_time AS DATE) AS booking_date,
     br.booking_status,
@@ -265,6 +270,7 @@ GO
 -- Business question: Which requester roles have the most cancelled, rejected, or no-show bookings?
 -- Target user(s): Facility managers, department administrators.
 -- Utility: Helps identify patterns that may require policy reminders, better communication, or approval workflow changes.
+-- Thống kê các nhóm người dùng có nhiều booking bị hủy, bị từ chối hoặc không đến sử dụng nhất.
 SELECT
     u.role AS requester_role,
     COUNT(*) AS total_booking_count,
@@ -285,7 +291,8 @@ GO
 -- Business question: Which approved bookings are past their scheduled end time but still have no usage session?
 -- Target user(s): Facility staff, facility managers.
 -- Utility: Identifies approved reservations that may need no-show review or manual follow-up.
-DECLARE @no_show_review_time DATETIME2(0) = '2026-08-12T00:00:00';
+-- Tìm các booking đã được duyệt nhưng có dấu hiệu no-show.
+DECLARE @no_show_review_time DATETIME2(0) = '2026-08-12T00:00:00'; -- thời điểm kiểm tra hệ thống
 
 SELECT
     br.booking_id,
@@ -301,8 +308,8 @@ JOIN dbo.spaces AS s ON s.space_code = br.space_code
 JOIN dbo.users AS requester ON requester.user_id = br.requester_id
 LEFT JOIN dbo.usage_sessions AS us ON us.booking_id = br.booking_id
 WHERE br.booking_status = N'approved'
-  AND us.booking_id IS NULL
-  AND br.requested_end_time < @no_show_review_time
+  AND us.booking_id IS NULL                                   -- không tồn tại booking_id trong usage_session
+  AND br.requested_end_time < @no_show_review_time            -- requested_end_time < @no_show_review_time
 ORDER BY br.requested_end_time;
 GO
 
@@ -310,6 +317,7 @@ GO
 -- Business question: How long did resolved maintenance cases take to complete or cancel?
 -- Target user(s): Facility managers, facility staff.
 -- Utility: Measures maintenance turnaround time by problem type and staff member for service quality review.
+-- Thống kê thời gian xử lý các sự cố bảo trì đã hoàn thành hoặc đã hủy.
 SELECT
     mr.maintenance_id,
     mr.problem_type,
@@ -333,6 +341,7 @@ GO
 -- Business question: Which spaces are missing common facilities needed for teaching or events?
 -- Target user(s): Facility managers, facility staff.
 -- Utility: Highlights facility gaps so staff can plan equipment purchases, movement, or setup before bookings.
+-- Tìm các phòng còn thiếu những thiết bị phổ biến phục vụ giảng dạy hoặc tổ chức sự kiện.
 WITH required_facilities AS (
     SELECT N'Projector' AS required_facility_name
     UNION ALL SELECT N'Whiteboard'
@@ -363,11 +372,14 @@ WHERE NOT EXISTS (
 )
 ORDER BY s.space_code, rf.required_facility_name;
 GO
+-- Đối với mỗi phòng đang hoạt động, hãy kiểm tra từng thiết bị bắt buộc (Projector, Whiteboard, Air conditioner). 
+-- Nếu phòng đó không có thiết bị đang được kiểm tra trong bảng facilities, thì hiển thị thông tin phòng cùng với tên thiết bị còn thiếu.
 
 -- Query 13
 -- Business question: How much approval work has each facility staff member or manager handled?
 -- Target user(s): Facility managers.
 -- Utility: Summarizes approval workload, decision mix, and average response time from request creation to decision.
+-- Thống kê khối lượng công việc phê duyệt của từng nhân viên quản lý cơ sở vật chất.
 SELECT
     approver.user_id AS staff_id,
     approver.full_name AS staff_name,
@@ -390,6 +402,7 @@ GO
 -- Business question: Which active maintenance records may affect pending or approved future bookings in the same space?
 -- Target user(s): Facility staff, facility managers, department administrators.
 -- Utility: Reveals bookings that may need rescheduling, cancellation, or direct communication because their space has unresolved maintenance.
+-- Tìm các booking sắp tới có thể bị ảnh hưởng bởi các sự cố bảo trì chưa được xử lý.
 SELECT
     mr.maintenance_id,
     mr.maintenance_status,
@@ -416,6 +429,7 @@ GO
 -- Business question: What is utilization by month, space type, and purpose of use?
 -- Target user(s): Facility managers, department administrators.
 -- Utility: Supports strategic capacity planning by showing where confirmed demand comes from across space categories and activity types.
+-- Thống kê mức độ sử dụng phòng theo tháng, loại phòng và mục đích sử dụng.
 SELECT
     CONVERT(CHAR(7), br.requested_start_time, 120) AS booking_month,
     s.space_type,
